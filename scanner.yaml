@@ -1,16 +1,17 @@
 
 ATC_MAC_START: 'A4:C1:38'
 
-device_name:
-  - 'ATC_BAF9A8': 'Nursery'
-  - 'ATC_D1631E': 'Main Bedroom'
-  - 'ATC_76EB34': 'Kitchen'
-  - 'ATC_C857B0': 'Living Room'
-  - 'ATC_A15657': 'Guest Bedroom'
-  - 'ATC_6664B7': 'Dining Room'
-  - 'ATC_E6A6F4': 'Garage'
+location:
+  'ATC_BAF9A8': 'Nursery'
+  'ATC_D1631E': 'Main Bedroom'
+  'ATC_76EB34': 'Kitchen'
+  'ATC_C857B0': 'Living Room'
+  'ATC_A15657': 'Guest Bedroom'
+  'ATC_6664B7': 'Dining Room'
+  'ATC_E6A6F4': 'Garage'
 
 pubsub_emulator:
   topic_name: 'emulator'
   project_id: 'emulatorproject'
+  subscription: 'emulatorsub'
 
