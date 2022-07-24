@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import json
 import logging
 import os
 import time
@@ -13,18 +14,17 @@ def detection_callback(device, advertisement_data):
             and device.address and advertisement_data):
 
         reading = {
-            "epoch": time.time(),
+            "epoch": time.time() * 1000, # pubsub requires ms since epoch
             "device": device.address,
             "devicename": device.name,
             "RSSI": device.rssi,
             "advertisement": advertisement_data.service_data['0000181a-0000-1000-8000-00805f9b34fb']
         }
-
+    
         logging.debug(reading)
         publisher = pubsub_v1.PublisherClient()
         topic_path = publisher.topic_path(EMULATOR_PROJECT, TOPIC)
         publisher.publish(topic_path, str(reading).encode('utf-8'))
-        message_count += 1
 
 
 async def scanner():
@@ -48,11 +48,11 @@ def create_pubsub_emulator_topic(project_id, topic_id):
         publisher.create_topic(request={"name": topic_path})
         logging.info(f"Topic created: {topic_path}")
     else:
-        logging.info(f"Topic {topic_path} exists, deleting and re-creating..")
-        publisher.delete_topic(request={"topic": topic_path})
-        logging.info('Topic deleted..')
-        publisher.create_topic(request={"name": topic_path})
-        logging.info(f"Topic created: {topic_path}")
+        logging.info(f"Topic {topic_path} exists")
+        # publisher.delete_topic(request={"topic": topic_path})
+        # logging.info('Topic deleted..')
+        # publisher.create_topic(request={"name": topic_path})
+        # logging.info(f"Topic created: {topic_path}")
 
 
 if __name__ == "__main__":
@@ -75,18 +75,17 @@ if __name__ == "__main__":
         try:
             config = yaml.safe_load(stream)
         except yaml.YAMLError as exc:
-            print(exc)
+            logging.ERROR(exc)
 
     ATC_MAC_START = config["ATC_MAC_START"]
     TOPIC = config["pubsub_emulator"]["topic_name"]
     EMULATOR_PROJECT = config["pubsub_emulator"]["project_id"]
 
-    create_pubsub_emulator_topic(project_id=EMULATOR_PROJECT, topic_id=TOPIC)
+    #create_pubsub_emulator_topic(project_id=EMULATOR_PROJECT, topic_id=TOPIC)
 
     while True:
         message_count = 0
         logging.info("Starting Scan.")
         asyncio.run(scanner())
-        logging.info(f"{message_count} messages sent")
         logging.info("30 second pause")
         time.sleep(30)
