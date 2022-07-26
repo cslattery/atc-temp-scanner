@@ -32,27 +32,33 @@ async def scanner():
     scanner.register_detection_callback(detection_callback)
     await scanner.start()
     await asyncio.sleep(20.0)
+    atc_devices = {}
+    for d in scanner.discovered_devices:
+            if d.address[0:8] == ATC_MAC_START:
+                if d.name in atc_devices:
+                    atc_devices[d.name] += 1
+                else:
+                    atc_devices[d.name] = 1
+    device_count = len(atc_devices)
+    record_count = sum(atc_devices.values())
+    logging.info(f"{device_count} devices found, with {record_count} records.")
+
     await scanner.stop()
 
 
-def create_pubsub_emulator_topic(project_id, topic_id):
+def check_pubsub_topic(project_id, topic_id):
     publisher = pubsub_v1.PublisherClient()
     project_path = f"projects/{project_id}"
     topic_path = publisher.topic_path(project_id, topic_id)
-    # test if exists
     topic_names = []
+
     for topic in publisher.list_topics(request={"project": project_path}):
         topic_names.append(str(topic.name))
     if topic_path not in topic_names:
-        logging.info('Topic does not exist, creating..')
-        publisher.create_topic(request={"name": topic_path})
-        logging.info(f"Topic created: {topic_path}")
+        logging.info(f"Topic {topic_path} does not exist")
+        return False
     else:
-        logging.info(f"Topic {topic_path} exists")
-        # publisher.delete_topic(request={"topic": topic_path})
-        # logging.info('Topic deleted..')
-        # publisher.create_topic(request={"name": topic_path})
-        # logging.info(f"Topic created: {topic_path}")
+        return True
 
 
 if __name__ == "__main__":
@@ -81,7 +87,7 @@ if __name__ == "__main__":
     TOPIC = config["pubsub_emulator"]["topic_name"]
     EMULATOR_PROJECT = config["pubsub_emulator"]["project_id"]
 
-    #create_pubsub_emulator_topic(project_id=EMULATOR_PROJECT, topic_id=TOPIC)
+    assert check_pubsub_topic(project_id=EMULATOR_PROJECT, topic_id=TOPIC), "Pubsub topic does not exist."
 
     while True:
         message_count = 0
