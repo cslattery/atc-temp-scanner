@@ -24,7 +24,7 @@ def detection_callback(device, advertisement_data):
         logging.debug(reading)
         publisher = pubsub_v1.PublisherClient()
         topic_path = publisher.topic_path(EMULATOR_PROJECT, TOPIC)
-        publisher.publish(topic_path, str(reading).encode('utf-8'))
+        publisher.publish(topic_path, str(reading).encode('utf-8'), attrs=str({"epoch":reading['epoch']}))
 
 
 async def scanner():
